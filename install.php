@@ -12,6 +12,8 @@
 
 rex_sql_table::get(rex::getTable('article'))
     ->ensureColumn(new rex_sql_column('yrewrite_url', 'varchar(255)'))
+    ->ensureColumn(new rex_sql_column('yrewrite_url_data', 'text'))
+    ->ensureColumn(new rex_sql_column('yrewrite_func', 'varchar(100)', false, 'auto'))
     ->ensureColumn(new rex_sql_column('yrewrite_canonical_url', 'varchar(255)'))
     ->ensureColumn(new rex_sql_column('yrewrite_priority', 'varchar(5)'))
     ->ensureColumn(new rex_sql_column('yrewrite_changefreq', 'varchar(10)'))

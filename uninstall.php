@@ -12,6 +12,8 @@
 
 rex_sql_table::get(rex::getTable('article'))
     ->removeColumn('yrewrite_url')
+    ->removeColumn('yrewrite_url_data')
+    ->removeColumn('yrewrite_func')
     ->removeColumn('yrewrite_priority')
     ->removeColumn('yrewrite_changefreq')
     ->removeColumn('yrewrite_title')

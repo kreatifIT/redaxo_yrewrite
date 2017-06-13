@@ -84,8 +84,22 @@ class rex_yrewrite_scheme
             }
             return $this->getClang($art->getClang(), $domain) . '/';
         }
-        if ($url = $art->getValue('yrewrite_url')) {
-            return $url;
+
+        $type = $art->getValue('yrewrite_func');
+        $data = (array) json_decode($art->getValue('yrewrite_url_data'));
+
+        if ($type != 'auto' && strlen($data[$type])) {
+            switch ($type) {
+                case 'extern':
+                case 'custom':
+                    return $data[$type];
+
+                case 'intern':
+                    return rex_getUrl($data[$type]);
+
+                case 'mediafile':
+                    return 'media/'. $data[$type];
+            }
         }
         return false;
     }

@@ -6,6 +6,10 @@ yrewrite_rewriter_seo = SEO-Daten
 yrewrite_mode_url = URL
 yrewrite_mode_seo = SEO
 yrewrite_customurl = Benutzerdefinierte URL
+yrewrite_intern_url = Interne Weiterleitung auf Artikel
+yrewrite_extern_url = Externe Weiterleitung auf URL
+yrewrite_mediafile = Mediendatei
+yrewrite_url_type = URL Typ
 yrewrite_update_url = URL aktualisieren
 yrewrite_update_seo = SEO-Daten aktualisieren
 
