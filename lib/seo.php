@@ -169,10 +169,10 @@ class rex_yrewrite_seo
                 // image from slices
                 $sql->setQuery('
                     SELECT
-                        CONCAT_WS(",", 
+                        TRIM(BOTH "," FROM CONCAT_WS(",", 
                             media1, media2, media3, media4, media5, media6, media7, media8, media9, media10,
                             medialist1, medialist2, medialist3, medialist4, medialist5, medialist6, medialist7, medialist8, medialist9, medialist10
-                        ) AS mediagroup
+                        )) AS mediagroup
                     FROM rex_article_slice 
                     WHERE 
                         article_id = :article_id 
