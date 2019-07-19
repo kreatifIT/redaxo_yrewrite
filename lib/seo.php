@@ -179,27 +179,27 @@ class rex_yrewrite_seo
                         article_id = :article_id 
                         AND clang_id = :clang_id 
                         AND (
-                            media1 IS NOT NULL
-                            OR media1 IS NOT NULL
-                            OR media2 IS NOT NULL
-                            OR media3 IS NOT NULL
-                            OR media4 IS NOT NULL
-                            OR media5 IS NOT NULL
-                            OR media6 IS NOT NULL
-                            OR media7 IS NOT NULL
-                            OR media8 IS NOT NULL
-                            OR media9 IS NOT NULL
-                            OR media10 IS NOT NULL
-                            OR medialist1 IS NOT NULL
-                            OR medialist2 IS NOT NULL
-                            OR medialist3 IS NOT NULL
-                            OR medialist4 IS NOT NULL
-                            OR medialist5 IS NOT NULL
-                            OR medialist6 IS NOT NULL
-                            OR medialist7 IS NOT NULL
-                            OR medialist8 IS NOT NULL
-                            OR medialist9 IS NOT NULL
-                            OR medialist10 IS NOT NULL
+                            media1 > ""
+                            OR media1 > ""
+                            OR media2 > ""
+                            OR media3 > ""
+                            OR media4 > ""
+                            OR media5 > ""
+                            OR media6 > ""
+                            OR media7 > ""
+                            OR media8 > ""
+                            OR media9 > ""
+                            OR media10 > ""
+                            OR medialist1 > ""
+                            OR medialist2 > ""
+                            OR medialist3 > ""
+                            OR medialist4 > ""
+                            OR medialist5 > ""
+                            OR medialist6 > ""
+                            OR medialist7 > ""
+                            OR medialist8 > ""
+                            OR medialist9 > ""
+                            OR medialist10 > ""
                         ) 
                     ORDER BY priority LIMIT 1', [
                     'article_id' => $this->article->getId(),
