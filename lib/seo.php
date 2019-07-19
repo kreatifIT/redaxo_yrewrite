@@ -76,6 +76,7 @@ class rex_yrewrite_seo
         }
 
         $ytitle = rex_extension::registerPoint(new rex_extension_point('YREWRITE_TITLE', $ytitle, ['article' => $this->article]));
+        $title_scheme = rex_extension::registerPoint(new rex_extension_point('YREWRITE_TITLE_SCHEME', $title_scheme, ['article' => $this->article]));
 
         $title = $title_scheme;
         $title = str_replace('%T', $ytitle, $title);
