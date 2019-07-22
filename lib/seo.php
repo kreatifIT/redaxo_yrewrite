@@ -3,23 +3,24 @@
 /**
  * YREWRITE Addon.
  *
- * @author jan.kristinus@yakamara.de
+ * @author  jan.kristinus@yakamara.de
  *
  * @package redaxo\yrewrite
  */
 
 class rex_yrewrite_seo
 {
-    public $article = null,
-        $domain = null;
+    public $article = null, $domain = null;
 
-    public static $priority = ['1.0', '0.7', '0.5', '0.3', '0.1', '0.0'],
-        $priority_default = '',
-        $index_setting_default = 0,
-        $changefreq = ['always', 'hourly', 'daily', 'weekly', 'monthly', 'yearly', 'never'],
-        $changefreq_default = 'weekly',
-        $robots_default = "User-agent: *\nDisallow:",
-        $title_scheme_default = '%T / %SN';
+    public static $priority = ['1.0', '0.7', '0.5', '0.3', '0.1', '0.0'], $priority_default = '', $index_setting_default = 0, $changefreq = [
+        'always',
+        'hourly',
+        'daily',
+        'weekly',
+        'monthly',
+        'yearly',
+        'never',
+    ], $changefreq_default = 'weekly', $robots_default = "User-agent: *\nDisallow:", $title_scheme_default = '%T / %SN';
 
     public function __construct($article_id = 0, $clang = null)
     {
@@ -32,23 +33,23 @@ class rex_yrewrite_seo
 
         if (($article = rex_article::get($article_id, $clang))) {
             $this->article = $article;
-            $this->domain = rex_yrewrite::getDomainByArticleId($article_id, $clang);
+            $this->domain  = rex_yrewrite::getDomainByArticleId($article_id, $clang);
         }
     }
 
     public function getTitleTag()
     {
-        return '<title>'.rex_escape(strip_tags($this->getTitle())).'</title>'; //  lang="de"
+        return '<title>' . rex_escape(strip_tags($this->getTitle())) . '</title>'; //  lang="de"
     }
 
     public function getDescriptionTag()
     {
-        return '<meta name="description" content="'.rex_escape(strip_tags($this->getDescription())).'">'; //  lang="de"
+        return '<meta name="description" content="' . rex_escape(strip_tags($this->getDescription())) . '">'; //  lang="de"
     }
 
     public function getCanonicalUrlTag()
     {
-        return '<link rel="canonical" href="'.rex_escape($this->getCanonicalUrl()).'" />';
+        return '<link rel="canonical" href="' . rex_escape($this->getCanonicalUrl()) . '" />';
     }
 
     public function getRobotsTag()
@@ -75,7 +76,7 @@ class rex_yrewrite_seo
             $ytitle = $this->article->getValue('name');
         }
 
-        $ytitle = rex_extension::registerPoint(new rex_extension_point('YREWRITE_TITLE', $ytitle, ['article' => $this->article]));
+        $ytitle       = rex_extension::registerPoint(new rex_extension_point('YREWRITE_TITLE', $ytitle, ['article' => $this->article]));
         $title_scheme = rex_extension::registerPoint(new rex_extension_point('YREWRITE_TITLE_SCHEME', $title_scheme, ['article' => $this->article]));
 
         $title = $title_scheme;
@@ -87,7 +88,8 @@ class rex_yrewrite_seo
 
     public function getDescription($content_length = 180)
     {
-        $description = trim(rex_extension::registerPoint(new rex_extension_point('YREWRITE_DESCRIPTION', $this->article->getValue('yrewrite_description'), ['article' => $this->article])));
+        $description = trim(rex_extension::registerPoint(new rex_extension_point('YREWRITE_DESCRIPTION',
+            $this->article->getValue('yrewrite_description'), ['article' => $this->article])));
 
         if ($description != '') {
             $description = strip_tags($description);
@@ -104,7 +106,8 @@ class rex_yrewrite_seo
         if ($canonical_url == "") {
             $canonical_url = rex_yrewrite::getFullUrlByArticleId($this->article->getId(), $this->article->getClang());
         }
-        $canonical_url = rex_extension::registerPoint(new rex_extension_point('YREWRITE_CANONICAL_URL', $canonical_url, ['article' => $this->article]));
+        $canonical_url = rex_extension::registerPoint(new rex_extension_point('YREWRITE_CANONICAL_URL', $canonical_url,
+            ['article' => $this->article]));
         return $canonical_url;
     }
 
@@ -118,8 +121,7 @@ class rex_yrewrite_seo
                 foreach ($domain->getClangs() as $clang) {
                     if ($lang = rex_clang::get($clang)) {
                         $article = rex_article::getCurrent($clang);
-                        if ($article->isOnline() && $lang->isOnline())
-                        {
+                        if ($article->isOnline() && $lang->isOnline()) {
                             $lang_domains[$lang->getCode()] = rex_yrewrite::getFullUrlByArticleId($article->getId(), $lang->getId());
                         }
                     }
@@ -133,10 +135,10 @@ class rex_yrewrite_seo
 
     public function getHreflangTags()
     {
-        $return = '';
+        $return       = '';
         $lang_domains = $this->getHrefLangs();
 
-        foreach ($lang_domains as $code => $url){
+        foreach ($lang_domains as $code => $url) {
             $return .= '<link rel="alternate" hreflang="' . $code . '" href="' . $url . '" />';
         }
         return $return;
@@ -161,7 +163,7 @@ class rex_yrewrite_seo
             foreach ($mediaFields as $mfield) {
                 $images = $this->article->getValue($mfield['name']);
 
-                if($images != '') {
+                if ($images != '') {
                     break;
                 }
             }
@@ -219,20 +221,21 @@ class rex_yrewrite_seo
         if ($images != '') {
             $image = array_shift(explode(',', $images));
             $media = rex_media::get($image);
+            if ($media) {
+                $attrs = rex_extension::registerPoint(new rex_extension_point('YREWRITE_IMAGE_ATTRIBUTES', [
+                    'src'    => rex_yrewrite::getFullPath(ltrim($media->getUrl(), '/')),
+                    'width'  => $media->getValue('width'),
+                    'height' => $media->getValue('height'),
+                ], ['media' => $media]));
 
-            $attrs = rex_extension::registerPoint(new rex_extension_point('YREWRITE_IMAGE_ATTRIBUTES', [
-                'src'    => rex_yrewrite::getFullPath(ltrim($media->getUrl(), '/')),
-                'width'  => $media->getValue('width'),
-                'height' => $media->getValue('height'),
-            ], ['media' => $media]));
-
-            $return = '
+                $return = '
                 <meta property="og:image" content="' . $attrs['src'] . '" />
                 <meta property="og:image:width" content="' . $attrs['width'] . '" />
                 <meta property="og:image:height" content="' . $attrs['height'] . '" />
                 <meta property="twitter:image" content="' . $attrs['src'] . '" />
                 <meta name="image" content="' . $attrs['src'] . '" />
             ';
+            }
         }
         return $return;
     }
@@ -240,7 +243,7 @@ class rex_yrewrite_seo
     public function getSocialTags()
     {
         return '
-            <meta property="og:url" content="' . $this->getCanonicalUrl()  . '"/>
+            <meta property="og:url" content="' . $this->getCanonicalUrl() . '"/>
             <meta property="og:title" content="' . $this->getTitle() . '"/>
             <meta property="og:description" content="' . $this->getDescription(200) . '"/>
             <meta property="og:type" content="Article"/>
@@ -249,14 +252,9 @@ class rex_yrewrite_seo
     }
 
 
-
-
-
-
-
     public function cleanString($str)
     {
-        return str_replace(["\n","\r"], [' ',''], $str);
+        return str_replace(["\n", "\r"], [' ', ''], $str);
     }
 
     // ----- global static functions
@@ -269,7 +267,7 @@ class rex_yrewrite_seo
 
         header('Content-Type: text/plain');
         // header content length ?
-        $content = 'Sitemap: '.rex_yrewrite::getFullPath('sitemap.xml')."\n\n";
+        $content = 'Sitemap: ' . rex_yrewrite::getFullPath('sitemap.xml') . "\n\n";
 
         if (rex_yrewrite::getDomainByName($domain)) {
             $robots = rex_yrewrite::getDomainByName($domain)->getRobots();
@@ -295,42 +293,36 @@ class rex_yrewrite_seo
 
         $sitemap = [];
 
-        if (rex_yrewrite::getDomainByName($domain) || count($domains) == 1 ) {
+        if (rex_yrewrite::getDomainByName($domain) || count($domains) == 1) {
             $urls = [];
 
             if (count($domains) == 1) {
                 $domain = rex_yrewrite::getDefaultDomain();
-
             } else {
                 $domain = rex_yrewrite::getDomainByName($domain);
-
             }
 
             $domain_article_id = $domain->getStartId();
-            $paths = 0;
+            $paths             = 0;
             if (($dai = rex_article::get($domain_article_id))) {
                 $paths = count($dai->getParentTree());
             }
 
             foreach (rex_yrewrite::getPathsByDomain($domain->getName()) as $article_id => $path) {
                 foreach ($domain->getClangs() as $clang_id) {
-                    
+
                     if (!rex_clang::get($clang_id)->isOnline()) {
                         continue;
                     }
 
                     $this->article = rex_article::get($article_id, $clang_id);
-                    $category = $this->article->getParent() ?: $this->article->getCategory();
+                    $category      = $this->article->getParent() ?: $this->article->getCategory();
 
                     if ($category && !$category->isOnline()) {
                         continue;
                     }
 
-                    if (
-                        ($this->article) &&
-                        self::checkArticlePerm($this->article) &&
-                        ($this->article->getValue('yrewrite_index') == 1 || ($this->article->isOnline() && $this->article->getValue('yrewrite_index') == 0)) &&
-                        ($article_id != $domain->getNotfoundId() || $article_id == $domain->getStartId())
+                    if (($this->article) && self::checkArticlePerm($this->article) && ($this->article->getValue('yrewrite_index') == 1 || ($this->article->isOnline() && $this->article->getValue('yrewrite_index') == 0)) && ($article_id != $domain->getNotfoundId() || $article_id == $domain->getStartId())
 
                     ) {
 
@@ -343,7 +335,7 @@ class rex_yrewrite_seo
 
                         if (!in_array($priority, self::$priority)) {
                             $article_paths = count($this->article->getParentTree());
-                            $prio = $article_paths - $paths - 1;
+                            $prio          = $article_paths - $paths - 1;
                             if ($prio < 0) {
                                 $prio = 0;
                             }
@@ -372,11 +364,12 @@ class rex_yrewrite_seo
                                 $media = rex_media::get($media_name);
 
                                 if ($media && $media->isImage()) {
-                                    $imgUrl = [
-                                        'loc' => rex_yrewrite::getFullPath(ltrim($media->getUrl(), '/')),
+                                    $imgUrl         = [
+                                        'loc'   => rex_yrewrite::getFullPath(ltrim($media->getUrl(), '/')),
                                         'title' => rex_escape($media->getTitle()),
                                     ];
-                                    $url['image'][] = rex_extension::registerPoint(new rex_extension_point('YREWRITE_SITEMAP_IMAGE', $imgUrl, ['media' => $media, 'lang_id' => $clang_id]));
+                                    $url['image'][] = rex_extension::registerPoint(new rex_extension_point('YREWRITE_SITEMAP_IMAGE', $imgUrl,
+                                        ['media' => $media, 'lang_id' => $clang_id]));
                                 }
                             }
                         }
@@ -407,13 +400,11 @@ class rex_yrewrite_seo
 
                             $_item .= "\n\t</{$label1}:{$label1}>";
                         }
-                    }
-                    else {
+                    } else {
                         $_item .= "\n\t<{$label1}>{$value1}</{$label1}>";
                     }
-
                 }
-                $_item .= "\n".'</url>';
+                $_item .= "\n" . '</url>';
 
                 $sitemap[] = $_item;
             }
@@ -425,9 +416,9 @@ class rex_yrewrite_seo
         header('Content-Type: application/xml');
         $content = '<?xml version="1.0" encoding="UTF-8"?>';
         $content .= '<?xml-stylesheet type="text/xsl" href="assets/addons/yrewrite/xsl-stylesheets/xml-sitemap.xsl"?>';
-        $content .= "\n".'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">';
+        $content .= "\n" . '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">';
         $content .= implode("\n", $sitemap);
-        $content .= "\n".'</urlset>';
+        $content .= "\n" . '</urlset>';
         echo $content;
         exit;
     }
