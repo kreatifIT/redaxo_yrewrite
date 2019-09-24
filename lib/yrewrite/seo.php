@@ -22,6 +22,31 @@ class rex_yrewrite_seo
         'never',
     ], $changefreq_default = 'weekly', $robots_default = "User-agent: *\nDisallow:", $title_scheme_default = '%T / %SN';
 
+    /**
+     * @var string
+     */
+    public static $meta_title_field = 'yrewrite_title';
+    /**
+     * @var string
+     */
+    public static $meta_description_field = 'yrewrite_description';
+    /**
+     * @var string
+     */
+    public static $meta_changefreq_field = 'yrewrite_changefreq';
+    /**
+     * @var string
+     */
+    public static $meta_priority_field = 'yrewrite_priority';
+    /**
+     * @var string
+     */
+    public static $meta_index_field = 'yrewrite_index';
+    /**
+     * @var string
+     */
+    public static $meta_canonical_url_field = 'yrewrite_canonical_url';
+
     public function __construct($article_id = 0, $clang = null)
     {
         if ($article_id == 0) {
@@ -54,7 +79,7 @@ class rex_yrewrite_seo
 
     public function getRobotsTag()
     {
-        if ($this->article->getValue('yrewrite_index') == 1 || ($this->article->getValue('yrewrite_index') == 0 && $this->article->isOnline())) {
+        if ($this->article->getValue(self::$meta_index_field) == 1 || ($this->article->getValue(self::$meta_index_field) == 0 && $this->article->isOnline())) {
             return '<meta name="robots" content="index, follow">';
         } else {
             return '<meta name="robots" content="noindex, nofollow">';
@@ -69,8 +94,8 @@ class rex_yrewrite_seo
         }
 
         $ytitle = '';
-        if ($this->article && $this->article->getValue('yrewrite_title') != '') {
-            $ytitle = $this->article->getValue('yrewrite_title');
+        if ($this->article && $this->article->getValue(self::$meta_title_field) != '') {
+            $ytitle = $this->article->getValue(self::$meta_title_field);
         }
         if ($ytitle == '') {
             $ytitle = $this->article->getValue('name');
@@ -89,7 +114,7 @@ class rex_yrewrite_seo
     public function getDescription($content_length = 180)
     {
         $description = trim(rex_extension::registerPoint(new rex_extension_point('YREWRITE_DESCRIPTION',
-            $this->article->getValue('yrewrite_description'), ['article' => $this->article])));
+            $this->article->getValue(self::$meta_description_field), ['article' => $this->article])));
 
         if ($description != '') {
             $description = strip_tags($description);
@@ -102,12 +127,11 @@ class rex_yrewrite_seo
 
     public function getCanonicalUrl()
     {
-        $canonical_url = trim($this->article->getValue('yrewrite_canonical_url'));
+        $canonical_url = trim($this->article->getValue(self::$meta_canonical_url_field));
         if ($canonical_url == "") {
             $canonical_url = rex_yrewrite::getFullUrlByArticleId($this->article->getId(), $this->article->getClang());
         }
-        $canonical_url = rex_extension::registerPoint(new rex_extension_point('YREWRITE_CANONICAL_URL', $canonical_url,
-            ['article' => $this->article]));
+        $canonical_url = rex_extension::registerPoint(new rex_extension_point('YREWRITE_CANONICAL_URL', $canonical_url, ['article' => $this->article]));
         return $canonical_url;
     }
 
@@ -121,7 +145,8 @@ class rex_yrewrite_seo
                 foreach ($domain->getClangs() as $clang) {
                     if ($lang = rex_clang::get($clang)) {
                         $article = rex_article::getCurrent($clang);
-                        if ($article->isOnline() && $lang->isOnline()) {
+                        if ($article->isOnline() && $lang->isOnline())
+                        {
                             $lang_domains[$lang->getCode()] = rex_yrewrite::getFullUrlByArticleId($article->getId(), $lang->getId());
                         }
                     }
@@ -315,26 +340,30 @@ class rex_yrewrite_seo
                         continue;
                     }
 
-                    $this->article = rex_article::get($article_id, $clang_id);
-                    $category      = $this->article->getParent() ?: $this->article->getCategory();
+                    $article = rex_article::get($article_id, $clang_id);
+                    $category = $article->getParent() ?: $article->getCategory();
 
                     if ($category && !$category->isOnline()) {
                         continue;
                     }
 
-                    if (($this->article) && self::checkArticlePerm($this->article) && ($this->article->getValue('yrewrite_index') == 1 || ($this->article->isOnline() && $this->article->getValue('yrewrite_index') == 0)) && ($article_id != $domain->getNotfoundId() || $article_id == $domain->getStartId())
+                    if (
+                        ($article) &&
+                        $article->isPermitted() &&
+                        ($article->getValue(self::$meta_index_field) == 1 || ($article->isOnline() && $article->getValue(self::$meta_index_field) == 0)) &&
+                        ($article_id != $domain->getNotfoundId() || $article_id == $domain->getStartId())
 
                     ) {
 
-                        $changefreq = $this->article->getValue('yrewrite_changefreq');
+                        $changefreq = $article->getValue(self::$meta_changefreq_field);
                         if (!in_array($changefreq, self::$changefreq)) {
                             $changefreq = self::$changefreq_default;
                         }
 
-                        $priority = $this->article->getValue('yrewrite_priority');
+                        $priority = $article->getValue(self::$meta_priority_field);
 
                         if (!in_array($priority, self::$priority)) {
-                            $article_paths = count($this->article->getParentTree());
+                            $article_paths = count($article->getParentTree());
                             $prio          = $article_paths - $paths - 1;
                             if ($prio < 0) {
                                 $prio = 0;
@@ -349,7 +378,7 @@ class rex_yrewrite_seo
 
                         $url = [
                             'loc'        => rex_yrewrite::getFullPath($path[$clang_id]),
-                            'lastmod'    => date(DATE_W3C, $this->article->getValue('updatedate')),
+                            'lastmod'    => date(DATE_W3C, $article->getValue('updatedate')),
                             'changefreq' => $changefreq,
                             'priority'   => $priority,
                             'image'      => [],
@@ -415,18 +444,17 @@ class rex_yrewrite_seo
         rex_response::cleanOutputBuffers();
         header('Content-Type: application/xml');
         $content = '<?xml version="1.0" encoding="UTF-8"?>';
-        $content .= '<?xml-stylesheet type="text/xsl" href="assets/addons/yrewrite/xsl-stylesheets/xml-sitemap.xsl"?>';
-        $content .= "\n" . '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">';
+        $content .= "\n".'<?xml-stylesheet type="text/xsl" href="assets/addons/yrewrite/xsl-stylesheets/xml-sitemap.xsl"?>';
+        $content .= "\n".'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">';
         $content .= implode("\n", $sitemap);
         $content .= "\n" . '</urlset>';
         echo $content;
         exit;
     }
 
+    /* @deprecated */
     public static function checkArticlePerm($article)
     {
-        $perm = true;
-        $perm = rex_extension::registerPoint(new rex_extension_point('YREWRITE_ARTICLE_PERM', $perm, ['article' => $article]));
-        return $perm;
+        return $article->isPermitted();
     }
 }

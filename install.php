@@ -10,11 +10,11 @@
  */
 
 rex_sql_table::get(rex::getTable('article'))
-    ->ensureColumn(new rex_sql_column('yrewrite_url', 'varchar(255)'))
-    ->ensureColumn(new rex_sql_column('yrewrite_canonical_url', 'varchar(255)'))
+    ->ensureColumn(new rex_sql_column('yrewrite_url', 'text'))
+    ->ensureColumn(new rex_sql_column('yrewrite_canonical_url', 'text'))
     ->ensureColumn(new rex_sql_column('yrewrite_priority', 'varchar(5)'))
     ->ensureColumn(new rex_sql_column('yrewrite_changefreq', 'varchar(10)'))
-    ->ensureColumn(new rex_sql_column('yrewrite_title', 'varchar(255)'))
+    ->ensureColumn(new rex_sql_column('yrewrite_title', 'varchar(191)'))
     ->ensureColumn(new rex_sql_column('yrewrite_description', 'text'))
     ->ensureColumn(new rex_sql_column('yrewrite_index', 'tinyint(1)'))
     ->alter()
@@ -61,4 +61,14 @@ $table
     ->ensureColumn(new rex_sql_column('expiry_date', 'date'))
     ->ensure();
 
+$c = rex_sql::factory();
+$c->setQuery('ALTER TABLE `' . rex::getTable('yrewrite_domain') . '` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;');
+$c->setQuery('ALTER TABLE `' . rex::getTable('yrewrite_alias') . '` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;');
+$c->setQuery('ALTER TABLE `' . rex::getTable('yrewrite_forward') . '` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;');
+
 rex_delete_cache();
+
+if (!class_exists('rex_yrewrite_seo_visibility')) {
+    require_once('lib/yrewrite/seo_visibility.php');
+}
+rex_yrewrite_seo_visibility::install();
