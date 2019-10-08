@@ -118,7 +118,7 @@ rex_extension::register('PACKAGES_INCLUDED', function ($params) {
 if (rex_request('rex_yrewrite_func', 'string') == 'sitemap') {
     rex_extension::register('PACKAGES_INCLUDED', function ($params) {
         $sitemap = new rex_yrewrite_seo();
-        $sitemap->sendSitemap();
+        $sitemap->sendSitemap('', rex_get('index', 'int'));
     }, rex_extension::LATE);
 }
 

@@ -307,19 +307,21 @@ class rex_yrewrite_seo
         exit;
     }
 
-    public function sendSitemap($domain = '')
+    public function getSitemapUrls($domain, $sitemap_index)
     {
-
         $domains = rex_yrewrite::getDomains();
 
         if ($domain == '') {
             $domain = rex_yrewrite::getHost();
         }
 
+        $urls = [];
+        $url_cnt = 0;
+        $url_limit = 40000;
         $sitemap = [];
+        $sitemaps = [];
 
         if (rex_yrewrite::getDomainByName($domain) || count($domains) == 1) {
-            $urls = [];
 
             if (count($domains) == 1) {
                 $domain = rex_yrewrite::getDefaultDomain();
@@ -344,6 +346,12 @@ class rex_yrewrite_seo
                     $category = $article->getParent() ?: $article->getCategory();
 
                     if ($category && !$category->isOnline()) {
+                        continue;
+                    }
+                    $url_cnt++;
+
+                    if ($sitemap_index > 0 && $url_cnt < ($sitemap_index - 1) * $url_limit) {
+                        $urls[] = null;
                         continue;
                     }
 
@@ -403,51 +411,115 @@ class rex_yrewrite_seo
                             }
                         }
 
-                        $urls[] = $url;
+                        if ($sitemap_index == 0) {
+                            if ($url_cnt == $url_limit) {
+                                $url_cnt = 0;
+                                $sitemaps[] = [
+                                    'url_count' => $url_limit,
+                                    //'lastmod' => '0000-00-00 00:00:00'
+                                ];
+                            }
+                        } else {
+                            $urls[] = $url;
+
+                            if (count($urls) == $sitemap_index * $url_limit) {
+                                break 2;
+                            }
+                        }
                     }
                 }
             }
 
-            $urls = rex_extension::registerPoint(new rex_extension_point('YREWRITE_DOMAIN_SITEMAP_URLS', $urls));
+            if ($sitemap_index > 0) {
+                $urls = array_splice($urls, ($sitemap_index - 1) * $url_limit, $url_limit);
+            }
+            $urls = rex_extension::registerPoint(new rex_extension_point('YREWRITE_DOMAIN_SITEMAP_URLS', $urls, [
+                'free_slots' => $sitemap_index == 0 ? 99999999 : $url_limit - count($urls)
+            ]));
 
-            foreach ($urls as $url) {
-                $_item = "\n<url>";
+            if ($sitemap_index == 0) {
+                $url_cnt += count($urls);
 
-                foreach ($url as $label1 => $value1) {
+                while ($url_cnt >= $url_limit) {
+                    $url_cnt = $url_cnt - $url_limit;
+                    $sitemaps[] = [
+                        'url_count' => $url_limit,
+                        //'lastmod' => '0000-00-00 00:00:00'
+                    ];
+                }
+            } else {
+                $urls = array_splice($urls, 0, $url_limit);
 
-                    if (is_array($value1)) {
-                        if (empty($value1)) {
-                            continue;
-                        }
+                foreach ($urls as $url) {
+                    $_item = "\n<url>";
 
-                        foreach ($value1 as $item) {
-                            $_item .= "\n\t<{$label1}:{$label1}>";
+                    foreach ($url as $label1 => $value1) {
 
-                            foreach ($item as $label2 => $value2) {
-                                $_item .= "\n\t\t<{$label1}:{$label2}>{$value2}</{$label1}:{$label2}>";
+                        if (is_array($value1)) {
+                            if (empty($value1)) {
+                                continue;
                             }
 
-                            $_item .= "\n\t</{$label1}:{$label1}>";
-                        }
-                    } else {
-                        $_item .= "\n\t<{$label1}>{$value1}</{$label1}>";
-                    }
-                }
-                $_item .= "\n" . '</url>';
+                            foreach ($value1 as $item) {
+                                $_item .= "\n\t<{$label1}:{$label1}>";
 
-                $sitemap[] = $_item;
+                                foreach ($item as $label2 => $value2) {
+                                    $_item .= "\n\t\t<{$label1}:{$label2}>{$value2}</{$label1}:{$label2}>";
+                                }
+
+                                $_item .= "\n\t</{$label1}:{$label1}>";
+                            }
+                        } else {
+                            $_item .= "\n\t<{$label1}>{$value1}</{$label1}>";
+                        }
+                    }
+                    $_item .= "\n" . '</url>';
+
+                    $sitemap[] = $_item;
+                }
+                $sitemap = rex_extension::registerPoint(new rex_extension_point('YREWRITE_DOMAIN_SITEMAP', $sitemap, ['domain' => $domain]));
             }
-            $sitemap = rex_extension::registerPoint(new rex_extension_point('YREWRITE_DOMAIN_SITEMAP', $sitemap, ['domain' => $domain]));
         }
-        $sitemap = rex_extension::registerPoint(new rex_extension_point('YREWRITE_SITEMAP', $sitemap));
+
+        if ($sitemap_index == 0) {
+            $sitemaps[] = [
+                'url_count' => $url_cnt,
+                //'lastmod' => '0000-00-00 00:00:00'
+            ];
+            return $sitemaps;
+        }
+        else {
+            return rex_extension::registerPoint(new rex_extension_point('YREWRITE_SITEMAP', $sitemap));
+        }
+    }
+
+    public function sendSitemap($domain = '', $sitemap_index = 0)
+    {
+        $sitemap_index = $sitemap_index >= 0 ? $sitemap_index : 0;
+        $sitemap = $this->getSitemapUrls($domain, $sitemap_index);
 
         rex_response::cleanOutputBuffers();
         header('Content-Type: application/xml');
         $content = '<?xml version="1.0" encoding="UTF-8"?>';
-        $content .= "\n".'<?xml-stylesheet type="text/xsl" href="assets/addons/yrewrite/xsl-stylesheets/xml-sitemap.xsl"?>';
-        $content .= "\n".'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">';
-        $content .= implode("\n", $sitemap);
-        $content .= "\n" . '</urlset>';
+
+        if ($sitemap_index == 0) {
+            $base_url = \rex_yrewrite::getCurrentDomain()->getUrl();
+            $content .= "\n".'<?xml-stylesheet type="text/xsl" href="assets/addons/yrewrite/xsl-stylesheets/xml-sitemapindex.xsl"?>';
+            $content .= "\n" . '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
+
+            foreach ($sitemap as $index => $item) {
+                $content .= "\n" . '<sitemap>';
+                $content .= "\n" . '<loc>'. $base_url .'sitemap.xml?'. http_build_query(['index' => $index + 1]) .'</loc>';
+                $content .= "\n" . '</sitemap>';
+            }
+            $content .= "\n" . '</sitemapindex>';
+        }
+        else {
+            $content .= "\n". '<?xml-stylesheet type="text/xsl" href="assets/addons/yrewrite/xsl-stylesheets/xml-sitemap.xsl"?>';
+            $content .= "\n".'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">';
+            $content .= implode("\n", $sitemap);
+            $content .= "\n" . '</urlset>';
+        }
         echo $content;
         exit;
     }
