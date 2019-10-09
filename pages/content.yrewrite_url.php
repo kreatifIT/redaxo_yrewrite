@@ -54,7 +54,7 @@ if ($isStartarticle) {
         if ($yrewrite_url == '') {
             return false;
         }
-        return !preg_match('/^[%_\.+\-\/a-zA-Z0-9]+$/', $yrewrite_url);
+        return !preg_match('/^[^\/][%_\.+\-\/a-zA-Z0-9]+$/', $yrewrite_url);
     }, 'params' => [], 'message' => rex_i18n::msg('yrewrite_warning_chars')]);
 
     $yform->setValidateField('customfunction', ['name' => 'yrewrite_url', 'function' => function ($func, $yrewrite_url, $params, $field) {
@@ -67,6 +67,9 @@ if ($isStartarticle) {
         return $return;
     }, 'params' => ['article_id' => $article_id, 'domain' => $domain, 'clang' => $clang], 'message' => rex_i18n::msg('yrewrite_warning_urlexists')]);
 
+    $yform->setActionField('callback', [function($field) {
+        $field->params['value_pool']['sql']['yrewrite_url'] = rtrim($field->params['value_pool']['sql']['yrewrite_url'], '/') . '/';
+    }]);
     $yform->setActionField('db', [rex::getTable('article'), 'id=' . $article_id.' and clang_id='.$clang]);
     $yform->setObjectparams('submit_btn_label', $addon->i18n('update'));
     $form = $yform->getForm();
