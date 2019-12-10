@@ -498,6 +498,11 @@ class rex_yrewrite_seo
         $sitemap_index = $sitemap_index >= 0 ? $sitemap_index : 0;
         $sitemap = $this->getSitemapUrls($domain, $sitemap_index);
 
+        if ($sitemap_index == 0 && count($sitemap) == 1) {
+            $sitemap_index = 1;
+            $sitemap = $this->getSitemapUrls($domain, $sitemap_index);
+        }
+
         rex_response::cleanOutputBuffers();
         header('Content-Type: application/xml');
         $content = '<?xml version="1.0" encoding="UTF-8"?>';
