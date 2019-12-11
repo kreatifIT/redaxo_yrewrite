@@ -514,7 +514,7 @@ class rex_yrewrite_seo
 
             foreach ($sitemap as $index => $item) {
                 $content .= "\n" . '<sitemap>';
-                $content .= "\n" . '<loc>'. $base_url .'sitemap.xml?'. http_build_query(['index' => $index + 1]) .'</loc>';
+                $content .= "\n" . '<loc>'. $base_url .'sitemap_'. ($index + 1) .'.xml</loc>';
                 $content .= "\n" . '</sitemap>';
             }
             $content .= "\n" . '</sitemapindex>';
