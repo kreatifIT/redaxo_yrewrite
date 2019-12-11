@@ -126,4 +126,4 @@ rex_extension::register('YREWRITE_PREPARE', function (rex_extension_point $ep) {
     $params = $ep->getParams();
     $params['subject'] = $ep->getSubject();
     return rex_yrewrite_forward::getForward($params);
-});
+}, rex_extension::EARLY); // kreatif: earyl added to give redirects priority
