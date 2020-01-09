@@ -195,7 +195,7 @@ class rex_yrewrite_seo
 
             if ($images == '') {
                 // image from slices
-                $sql->setQuery('
+                $query = '
                     SELECT
                         TRIM(BOTH "," FROM CONCAT_WS(",", 
                             media1, media2, media3, media4, media5, media6, media7, media8, media9, media10,
@@ -206,29 +206,31 @@ class rex_yrewrite_seo
                         article_id = :article_id 
                         AND clang_id = :clang_id 
                         AND (
-                            media1 > ""
-                            OR media1 > ""
-                            OR media2 > ""
-                            OR media3 > ""
-                            OR media4 > ""
-                            OR media5 > ""
-                            OR media6 > ""
-                            OR media7 > ""
-                            OR media8 > ""
-                            OR media9 > ""
-                            OR media10 > ""
-                            OR medialist1 > ""
-                            OR medialist2 > ""
-                            OR medialist3 > ""
-                            OR medialist4 > ""
-                            OR medialist5 > ""
-                            OR medialist6 > ""
-                            OR medialist7 > ""
-                            OR medialist8 > ""
-                            OR medialist9 > ""
-                            OR medialist10 > ""
+                            media1 <> ""
+                            OR media1 <> ""
+                            OR media2 <> ""
+                            OR media3 <> ""
+                            OR media4 <> ""
+                            OR media5 <> ""
+                            OR media6 <> ""
+                            OR media7 <> ""
+                            OR media8 <> ""
+                            OR media9 <> ""
+                            OR media10 <> ""
+                            OR medialist1 <> ""
+                            OR medialist2 <> ""
+                            OR medialist3 <> ""
+                            OR medialist4 <> ""
+                            OR medialist5 <> ""
+                            OR medialist6 <> ""
+                            OR medialist7 <> ""
+                            OR medialist8 <> ""
+                            OR medialist9 <> ""
+                            OR medialist10 <> ""
                         ) 
-                    ORDER BY priority LIMIT 1', [
+                    ORDER BY priority LIMIT 1
+                ';
+                $sql->setQuery($query, [
                     'article_id' => $this->article->getId(),
                     'clang_id'   => $this->article->getClangId(),
                 ]);
