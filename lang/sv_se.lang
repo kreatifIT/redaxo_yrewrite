@@ -73,6 +73,8 @@ yrewrite_warning_chars = Webbadressen är felaktig. Beakta stavning. Använda en
 yrewrite_warning_urlexists = URL finns redan {0}
 yrewrite_warning_otherarticle = Till annan artikel
 yrewrite_urlupdated = URL aktualiserades
+yrewrite_domain_not_well_formed = Domän / url-format är fel.
+
 
 yrewrite_seotitle = Titel
 yrewrite_seodescription = Beskrivning
@@ -102,6 +104,7 @@ yrewrite_index = Sökmotorindex och webbplatskarta (sitemap)
 yrewrite_index_status = Status controls Index and Sitemap
 yrewrite_index_index = Tillåter indexering / visa i sitemap (index)
 yrewrite_index_noindex = Tillåta inte indexering sida / visa inte i sitemap (NoIndex)
+yrewrite_index_noindex_follow = Tillåta inte indexering sida och följ länkar / visa inte i sitemap (NoIndex)
 
 yrewrite_htaccess_hasbeenset = .htaccess-filen har skapats eller skrivits över
 yrewrite_htaccess_set = skapa .htaccess fil
@@ -171,3 +174,10 @@ yrewrite_auto_redirect_days = Antal dagar tills automatiska omdirigeringar (redi
 yrewrite_auto_redirect_days_info = Ange 0 för att stänga av automatisk avaktivering.
 yrewrite_auto_redirects = Automatiska vidarebefordringar
 yrewrite_expiry_date = Avaktiveringsdatum
+
+yrewrite_perm_url_edit = Yrewrite: redigera URL
+yrewrite_perm_seo_edit = Yrewrite: redigera SEO-data
+yrewrite_seo_settings = Inställningar
+yrewrite_seo_saved = Inställningar sparades
+yrewrite_hide_url_block = Dölj URL-block
+yrewrite_hide_seo_block = Dölj SEO-block

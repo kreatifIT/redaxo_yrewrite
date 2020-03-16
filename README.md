@@ -32,14 +32,55 @@ Voraussetzung für die aktuelle Version von YRewrite: REDAXO >= 5.5
 
 ## Setup
 
-Nach der Installation und dem Abschluss des Setups wird die `.htaccess`-Datei von REDAXO aktualisiert. Auch eine virtuelle `robots.txt` und `sitemap.xml` werden erstellt.
+Nach der Installation und dem Abschluss des Setups wird eine `.htaccess`-Datei im Hauptverzeichnis erstellt, die für die Verwendung von YRewrite benötigt wird. Auch eine virtuelle `robots.txt` und `sitemap.xml` werden erstellt.
+
+Unter dem Reiter `Setup` kann die `.htaccess`-Datei jederzeit neu geschrieben werden Außerdem sind die `sitemap.xml` und `robots.txt` je Domain einsehbar.
+
+> **Hinweis:** Das Addon leitet alle Anfragen von `/media/` über das Media-Manager-AddOn. Stelle daher sicher, dass es weder eine Struktur-Kategorie "Media" gibt, noch, dass sich keine deiner Dateien fürs Frontend, bspw. CSS- oder JS-Dateien, darin befinden. Gute Orte hierfür sind die Ordner `/assets/` oder die Verwendung des Theme-AddOns. Sollte es notwendig sein, eine Kategorie namens "Media" zu verwenden, dann müssen [die entsprechenden Zeilen in der .htaccess-Datei](https://github.com/yakamara/redaxo_yrewrite/blob/b519622a3be135f1380e35bf85783cc33e71664f/setup/.htaccess#L96-L97) auskommentiert oder umbenannt werden und diese fortan genutzt werden, wenn Medien aus dem Medien Manager verwendet werden. Dies hat weitere Auswirkungen, z.B. auf geschützte Dateien mit YCom - das Auskommentieren und Umbenennen sollte daher nur von erfahrenen REDAXO-Entwicklern vorgenommen werden.
+
+### NGINX-Konfiguration für YRewrite
+
+Eine vollständige nginx config für YRewrite.
+
+> Hinweis für PLESK-Websites: Die Direktiven können unter ***Einstellungen für Apache & nginx*** der gewünschten Domain im Abschnitt ***Zusätzliche nginx-Anweisungen*** hinterlegt werden. 
+
+```nginx
+charset utf-8;
+
+location / {
+  try_files $uri $uri/ /index.php$is_args$args;
+}
+
+rewrite ^/sitemap\.xml$                           /index.php?rex_yrewrite_func=sitemap last;
+rewrite ^/robots\.txt$                            /index.php?rex_yrewrite_func=robots last;
+rewrite ^/media[0-9]*/imagetypes/([^/]*)/([^/]*)  /index.php?rex_media_type=$1&rex_media_file=$2&$args;
+rewrite ^/images/([^/]*)/([^/]*)                  /index.php?rex_media_type=$1&rex_media_file=$2&$args;
+rewrite ^/imagetypes/([^/]*)/([^/]*)              /index.php?rex_media_type=$1&rex_media_file=$2;
+
+#!!! WICHTIG !!! Falls Let's Encrypt fehlschlägt, diese Zeile auskommentieren (sollte jedoch funktionieren)
+location ~ /\. { deny  all; }
+
+# Zugriff auf diese Verzeichnisse verbieten
+location ^~ /redaxo/src { deny  all; }
+location ^~ /redaxo/data { deny  all; }
+location ^~ /redaxo/cache { deny  all; }
+location ^~ /redaxo/bin { deny  all; }
+
+
+# In einigen Fällen könnte folgende Anweisung zusätlich sinnvoll sein.
+
+location ~ /\.(ttf|eot|woff|woff2)$ {
+  add_header Access-Control-Allow-Origin *;
+  expires 604800s;
+}
+```
 
 
 ## Domain hinzufügen
 
 1. In "YRewrite" unter "Domains" Auf das +-Zeichen klicken.
 2. Domain eintragen, bspw. `https://www.meine-domain.de/`.
-3. Mount-Artikel auswählen. Das ist der der Startartikel einer Kategorie, in der sich YRewrite einklinken soll. Alle Artikel unterhalb des Mount-Artikels sind dann über die Domain aufrufbar.
+3. Mountpoint auswählen (optional). Das ist der Startartikel einer Kategorie, in der sich YRewrite einklinken soll. Alle Artikel unterhalb des Mount-Artikels sind dann über die Domain aufrufbar. Wird kein Artikel ausgewählt, sind alle Ebenen dieser Domain zugeordnet (Standard).
 4. Startseiten-Artikel auswählen. Das kann der Mount-Artikel sein oder eine separate Artikelseite. Diese wird als Startseite der Domain aufgerufen.
 5. Fehlerseiten-Artikel auswählen. Das ist der Artikel, der mit einem 404-Fehlercode ausgegeben wird, z.B., wenn eine Seite nicht gefunden werden kann oder ein Tippfehler in der Adresse vorliegt.
 6. Spracheinstellungen: Hier können Sprachen ausgewählt werden, die mit der Domain verknüpft werden. So lassen sich bspw. unterschiedliche Domains pro Sprache umsetzen.
@@ -49,11 +90,11 @@ Nach der Installation und dem Abschluss des Setups wird die `.htaccess`-Datei vo
 
 Diese Vorgehensweise für alle gewünschten Domains wiederholen.
 
-> Tipp: Um die Installation während der Entwicklung zuverlässig gegen ein Crawling von Bots und Suchmaschinen zu schützen, genügt die `robots.txt` nicht. Dazu gibt es das `maintanance`-Addon von https://friendsofREDAXO.github.io
+> **Tipp:** Um die Installation während der Entwicklung zuverlässig gegen ein Crawling von Bots und Suchmaschinen zu schützen, genügt die `robots.txt` nicht. Dazu gibt es das `maintanance`-Addon von https://friendsofREDAXO.github.io
 
-> Tipp: Die Domain auch in der Google Search Console hinterlegen und die `sitemap.xml` dort hinzufügen, um das Crawling zu beschleunigen. Die Domain sollte in allen vier Variationen hinterlegt werden, also mit/ohne `https` und mit/ohne `www.`. Die `sitemap.xml` jedoch nur in der Hauptdomain, am besten mit `https://` und `www.`
+> **Tipp:** Die Domain auch in der Google Search Console hinterlegen und die `sitemap.xml` dort hinzufügen, um das Crawling zu beschleunigen. Die Domain sollte in allen vier Variationen hinterlegt werden, also mit/ohne `https` und mit/ohne `www.`. Die `sitemap.xml` jedoch nur in der Hauptdomain, am besten mit `https://` und `www.`
 
-> Hinweis: Domains mit Umlauten bitte derzeit decodiert eintragen. Umwandlung bspw. mit https://www.punycoder.com
+> **Hinweis:** Domains mit Umlauten bitte derzeit decodiert eintragen. Umwandlung bspw. mit https://www.punycoder.com
 
 ## Alias-Domain hinzufügen
 
@@ -72,10 +113,9 @@ Unter Weiterleitungen können URLs definiert werden, die dann auf einen bestimmt
 
 > **Hinweis:** Mit dieser Einstellung können nicht bereits vorhandene Artikel / URLs umgeleitet werden, sondern nur URLs, die in der REDAXO-Installation nicht vorhanden sind. Das ist bspw. bei einem Relaunch der Fall, wenn alte URLs auf eine neue Zielseite umgeleitet werden sollen.
 
-## Setup
+## Weitere Schritte
 
-Unter `Setup` kann die `.htaccess`-Datei neu überschrieben werden, die für die Verwendung von YRewrite benötigt wird. Außerdem sind die `sitemap.xml` und `robots.txt` je Domain einsehbar.
-
+Die `sitemap.xml` kann pro Domain bspw. in der Google Search Console eingetragen werden, um die korrekte Indexierung der Domain(s) und deren Seiten zu überprüfen.
 
 # Klassen-Referenz
 
@@ -361,17 +401,57 @@ class translate_url_with_sprog extends rex_yrewrite_scheme
 }
 ```
 
+## Ersetzungsmuster mit eigenen Schemes verändern
+
+Die Ersetzungsmuster können mit eigenen Schemes verändert werden. In diesem Beispiel wird `&` durch `und` getauscht.
+
+1. Datei in den lib-Ordner des Project-AddOns anlegen
+
+```
+<?php
+
+class rex_project_rewrite_scheme extends rex_yrewrite_scheme
+{
+    /**
+     * @param string $string
+     * @param int $clang
+     *
+     * @return string
+     */
+    public function normalize($string, $clang = 1)
+    {
+        $string = str_replace(
+            ['&'],
+            ['und'],
+            $string
+        );
+
+        // Id 2 = ungarisch
+        if ($clang == 2) {
+            $string = str_replace(
+                ['ő', 'ű'],
+                ['oe', 'ue'],
+                $string
+            );
+        }
+        return parent::normalize($string, $clang);
+    }
+}
+```
+
+2. In der boot.php Datei des project AddOns diesen Code einfügen
+
+`rex_yrewrite::setScheme(new rex_project_rewrite_scheme());`
+
 ## Addons, die eigene Schemes mitbringen:
 
 - YRewrite scheme: https://github.com/FriendsOfREDAXO/yrewrite_scheme
 - xcore: https://github.com/RexDude/xcore
 
 
-# Links und Hilfe
+# Weitere Unterstützung
 
-## Bugmeldungen Hilfe und Links
-
-* Auf Github: https://github.com/yakamara/REDAXO_yrewrite/issues/
-* im Forum: https://www.REDAXO.org/forum/
-* im Slack-Channel: https://friendsofREDAXO.slack.com/
+* Bug melden via GitHub: https://github.com/yakamara/REDAXO_yrewrite/issues/
+* Hilfe via REDAXO Slack-Channel: https://friendsofREDAXO.slack.com/
+* Tricks via FriendsOfREDAXO: https://friendsofredaxo.github.io/tricks/ bei Addons > YRewrite
 
