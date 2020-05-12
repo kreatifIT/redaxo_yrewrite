@@ -68,7 +68,11 @@ if ($isStartarticle) {
     }, 'params' => ['article_id' => $article_id, 'domain' => $domain, 'clang' => $clang], 'message' => rex_i18n::msg('yrewrite_warning_urlexists')]);
 
     $yform->setActionField('callback', [function($field) {
-        $field->params['value_pool']['sql']['yrewrite_url'] = rtrim($field->params['value_pool']['sql']['yrewrite_url'], '/') . '/';
+        $yrewrite_url = trim($field->params['value_pool']['sql']['yrewrite_url']);
+        if ($yrewrite_url != '') {
+            $yrewrite_url = rtrim($yrewrite_url, '/') . '/';
+        }
+        $field->params['value_pool']['sql']['yrewrite_url'] = $yrewrite_url;
     }]);
     $yform->setActionField('db', [rex::getTable('article'), 'id=' . $article_id.' and clang_id='.$clang]);
     $yform->setObjectparams('submit_btn_label', $addon->i18n('update'));
