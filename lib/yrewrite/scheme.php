@@ -36,7 +36,7 @@ class rex_yrewrite_scheme
      */
     public function getClang($clang, rex_yrewrite_domain $domain)
     {
-        if (count($domain->getClangs()) <= 1 || $domain->isStartClangHidden() && $clang == $domain->getStartClang()) {
+        if ($domain->isStartClangHidden() && $clang == $domain->getStartClang()) {
             return '';
         }
 
@@ -79,7 +79,7 @@ class rex_yrewrite_scheme
     public function getCustomUrl(rex_article $art, rex_yrewrite_domain $domain)
     {
         if ($domain->getStartId() == $art->getId()) {
-            if ($domain->getStartClang() == $art->getClang()) {
+            if (!$domain->isStartClangAuto() && $domain->getStartClang() == $art->getClang()) {
                 return '/';
             }
             return $this->getClang($art->getClang(), $domain) . $this->suffix;

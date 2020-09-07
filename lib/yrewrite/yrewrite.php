@@ -45,7 +45,7 @@ class rex_yrewrite
             $path = dirname($path);
         }
         $path = rtrim($path, DIRECTORY_SEPARATOR) . '/';
-        self::addDomain(new rex_yrewrite_domain('default', null, $path, 0, rex_article::getSiteStartArticleId(), rex_article::getNotfoundArticleId()));
+        self::addDomain(new rex_yrewrite_domain('default', null, $path, 0, rex_article::getSiteStartArticleId(), rex_article::getNotfoundArticleId(), rex_clang::getAllIds(), rex_clang::getStartId(), '', '', '', rex_clang::count() <= 1));
 
         self::$pathfile = rex_path::addonCache('yrewrite', 'pathlist.json');
         self::$configfile = rex_path::addonCache('yrewrite', 'config.php');
@@ -247,7 +247,7 @@ class rex_yrewrite
 
         $host = self::getHost();
 
-        if (isset(self::$paths['paths'][$host])) {
+        if (isset(self::$domainsByName[$host])) {
             $domain = self::$domainsByName[$host];
         } else {
             // check for aliases
@@ -296,10 +296,18 @@ class rex_yrewrite
 
         $currentScheme = self::isHttps() ? 'https' : 'http';
         $domainScheme = $domain->getScheme();
-        if ($domainScheme && $domainScheme !== $currentScheme) {
+        $coreUseHttps = rex::getProperty('use_https');
+        if (
+            $domainScheme && $domainScheme !== $currentScheme &&
+            true !== $coreUseHttps && rex::getEnvironment() !== $coreUseHttps
+        ) {
             header('HTTP/1.1 301 Moved Permanently');
             header('Location: ' . $domainScheme . '://' . $host . $url . $params);
             exit;
+        }
+
+        if (rex::isBackend()) {
+            return true;
         }
 
         if (0 === strpos($url, $domain->getPath())) {
@@ -307,6 +315,37 @@ class rex_yrewrite
         }
 
         $url = ltrim($url, '/');
+
+        if ('' === $url && $domain->isStartClangAuto()) {
+            $startClang = null;
+            $startClangFallback = $domain->getStartClang();
+
+            if (isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
+                foreach (explode(',', $_SERVER['HTTP_ACCEPT_LANGUAGE']) as $code) {
+                    $code = trim(explode(';', $code, 2)[0]);
+                    $code = str_replace('-', '_', mb_strtolower($code));
+
+                    foreach ($domain->getClangs() as $clangId) {
+                        $clang = rex_clang::get($clangId);
+                        $clangCode = str_replace('-', '_', mb_strtolower($clang->getCode()));
+                        if ($code === $clangCode) {
+                            $startClang = $clang->getId();
+                            break 2;
+                        }
+
+                        if (0 === strpos($code, $clangCode.'_')) {
+                            $startClangFallback = $clang->getId();
+                        }
+                    }
+                }
+            }
+
+            $startClang = $startClang ?? $startClangFallback;
+
+            header('HTTP/1.1 302 Found');
+            header('Location: ' . $domainScheme . '://' . $host . rex_getUrl($domain->getStartId(), $startClang) . $params);
+            exit;
+        }
 
         $structureAddon = rex_addon::get('structure');
         $structureAddon->setProperty('start_article_id', $domain->getStartId());
@@ -409,10 +448,9 @@ class rex_yrewrite
             foreach ((array) self::$paths['paths'] as $i_domain => $i_id) {
                 if (isset(self::$paths['paths'][$i_domain][$id][$clang])) {
                     $domain = self::getDomainByName($i_domain);
-                    if ($domain) {
-                        $path = $domain->getUrl() . self::$paths['paths'][$i_domain][$id][$clang];
-                        break;
-                    }
+                    $path = 'default' === $domain->getName() ? $domain->getPath() : $domain->getUrl();
+                    $path .= self::$paths['paths'][$i_domain][$id][$clang];
+                    break;
                 }
             }
         }
@@ -639,7 +677,8 @@ class rex_yrewrite
                     . ($domain['clang_start_hidden'] ? 'true' : 'false') . ','
                     . $domain['id'] . ','
                     . $domain['auto_redirect'] . ','
-                    . $domain['auto_redirect_days']
+                    . $domain['auto_redirect_days'] . ','
+                    . ($domain['clang_start_auto'] ? 'true' : 'false')
                     . '));';
             }
         }
