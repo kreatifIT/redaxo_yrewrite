@@ -46,25 +46,6 @@ if ($func != '') {
     $yform->setValueField('checkbox', ['auto_redirect', $this->i18n('auto_redirects'), 'notice' => '<small>'.$this->i18n('yrewrite_auto_redirect').'</small>']);
     $yform->setValueField('text', ['auto_redirect_days', $this->i18n('yrewrite_auto_redirect_days'), 'notice' => '<small>'.$this->i18n('yrewrite_auto_redirect_days_info').'</small>']);
 
-    $js = '
-        <script>
-            (function () {
-                var startClangAuto = document.getElementById(\'yform-yrewrite_domains_form-field-10\');
-                var startClangHidden = document.getElementById(\'yform-yrewrite_domains_form-field-12\');
-
-                startClangAuto.addEventListener("change", function () {
-                    if (startClangAuto.checked) {
-                        startClangHidden.disabled = true;
-                        startClangHidden.checked = false;
-                    } else {
-                        startClangHidden.disabled = false;
-                    }
-                });
-                startClangAuto.dispatchEvent(new Event("change"));
-            })();
-        </script>
-    ';
-
     if ($func == 'delete') {
 
         if (!$csrf->isValid()) {
