@@ -156,7 +156,7 @@ class rex_yrewrite
         $clang = $clang ?: rex_clang::getCurrentId();
 
         foreach (self::$domainsByName as $name => $domain) {
-            if (isset(self::$paths['paths'][$name][$aid][$clang])) {
+            if (isset(self::$paths['paths'][$name][$aid][$clang]) || isset(self::$paths['redirections'][$name][$aid][$clang])) {
                 return $domain;
             }
         }
@@ -406,7 +406,7 @@ class rex_yrewrite
         $structureAddon->setProperty('article_id', $domain->getNotfoundId());
         rex_clang::setCurrentId($domain->getStartClang());
         rex_response::setStatus(rex_response::HTTP_NOT_FOUND);
-        foreach (self::$paths['paths'][$domain->getName()][$domain->getStartId()] as $clang => $clangUrl) {
+        foreach (self::$paths['paths'][$domain->getName()][$domain->getStartId()] ?? [] as $clang => $clangUrl) {
             if ($clang != $domain->getStartClang() && $clangUrl != '' && 0 === strpos($url, $clangUrl)) {
                 rex_clang::setCurrentId($clang);
                 break;
@@ -426,10 +426,16 @@ class rex_yrewrite
         $id = $params['id'];
         $clang = $params['clang'];
 
-        if (isset(self::$paths['redirections'][$id][$clang])) {
-            $params['id'] = self::$paths['redirections'][$id][$clang]['id'];
-            $params['clang'] = self::$paths['redirections'][$id][$clang]['clang'];
-            return self::rewrite($params, $yparams, $fullpath);
+        foreach (self::$paths['redirections'] as $domain => $redirections) {
+            if (isset($redirections[$id][$clang]['url'])) {
+                return $redirections[$id][$clang]['url'];
+            }
+
+            if (isset($redirections[$id][$clang])) {
+                $params['id'] = $redirections[$id][$clang]['id'];
+                $params['clang'] = $redirections[$id][$clang]['clang'];
+                return self::rewrite($params, $yparams, $fullpath);
+            }
         }
 
         //$url = urldecode($_SERVER['REQUEST_URI']);
@@ -733,10 +739,11 @@ class rex_yrewrite
     {
         $domain = self::getHost();
         $http = 'http://';
+        $subfolder = rex_url::base();
         if (self::isHttps()) {
             $http = 'https://';
         }
-        return $http . $domain . '/' . $link;
+        return $http . $domain . $subfolder . $link;
     }
 
     public static function getHost()

@@ -1,13 +1,14 @@
 yrewrite = YRewrite
 
 # content page
-yrewrite_rewriter = Rewrite URLs
+yrewrite_rewriter = URL
 yrewrite_rewriter_seo = SEO Data
-yrewrite_mode_url = URL
-yrewrite_mode_seo = SEO
-yrewrite_customurl = Custom URL
-yrewrite_update_url = Update URL
-yrewrite_update_seo = Update SEO-Data
+
+yrewrite_url_type = URL type
+yrewrite_url_type_auto = Auto
+yrewrite_url_type_custom = Custom URL
+yrewrite_url_type_redirection_internal = Redirection to article
+yrewrite_url_type_redirection_external = Redirection to URL
 
 yrewrite_domains = Domains
 yrewrite_article_urls = Article URLs
@@ -134,7 +135,7 @@ yrewrite_forward_status = Status
 yrewrite_forward_active = active
 yrewrite_forward_inactive = inactive
 yrewrite_forward_url = requested Url
-yrewrite_forward_url_info = The URL has to be entered without beginning and trailing slashes, for example "foo/bar". The variant with a slash will be automatically redirected.
+yrewrite_forward_url_info = The URL has to be entered without beginning and trailing slashes, for example <code>"foo/bar"</code>. The variant with a slash will be automatically redirected.<br> Optionally, parameters can also be specified, for example <code>"foo/bar?x=1&y=2"</code>.
 yrewrite_forward_type = Redirect to
 
 yrewrite_forward_type_article = Article
@@ -178,7 +179,8 @@ yrewrite_expiry_date = Date of deactivation
 
 yrewrite_perm_url_edit = Yrewrite: URL editing
 yrewrite_perm_seo_edit = Yrewrite: SEO-Data editing
-yrewrite_seo_settings = Settings
-yrewrite_seo_saved = Settings updated
+yrewrite_settings = Settings
+yrewrite_settings_saved = Settings updated
+yrewrite_unicode_urls = Allow unicode chars in URLs (umlauts, chinese/cyrillic characters etc.)
 yrewrite_hide_url_block = Hide URL-Block
 yrewrite_hide_seo_block = Hide SEO-Block

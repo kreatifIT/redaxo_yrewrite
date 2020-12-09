@@ -1,13 +1,14 @@
 yrewrite = YRewrite
 
 # content page
-yrewrite_rewriter = Benutzerdefinierte URL
+yrewrite_rewriter = URL
 yrewrite_rewriter_seo = SEO-Daten
-yrewrite_mode_url = URL
-yrewrite_mode_seo = SEO
-yrewrite_customurl = Benutzerdefinierte URL
-yrewrite_update_url = URL aktualisieren
-yrewrite_update_seo = SEO-Daten aktualisieren
+
+yrewrite_url_type = URL-Typ
+yrewrite_url_type_auto = Automatisch
+yrewrite_url_type_custom = Eigene URL
+yrewrite_url_type_redirection_internal = Umleitung zu Artikel
+yrewrite_url_type_redirection_external = Umleitung zu URL
 
 yrewrite_domains = Domains
 yrewrite_article_urls = Artikel-URLs
@@ -134,7 +135,7 @@ yrewrite_forward_status = Status
 yrewrite_forward_active = aktiv
 yrewrite_forward_inactive = inaktiv
 yrewrite_forward_url = aufgerufene URL
-yrewrite_forward_url_info = Die URL muss ohne <code>/<code> am Anfang und Ende eingetragen werden, zum Beispiel <code>"foo/bar"</code>. Die Variante mit <code>/</code> wird automatisch auch weitergeleitet.
+yrewrite_forward_url_info = Die URL muss ohne <code>/</code> am Anfang und Ende eingetragen werden, zum Beispiel <code>"foo/bar"</code>. Die Variante mit <code>/</code> wird automatisch auch weitergeleitet.<br> Optional können auch Parameter angegeben werden, zum Beispiel <code>"foo/bar?x=1&y=2"</code>.
 yrewrite_forward_type = Weiterleitung an
 
 yrewrite_forward_type_article = Artikel
@@ -178,7 +179,8 @@ yrewrite_expiry_date = Deaktivierungsdatum
 
 yrewrite_perm_url_edit = YRewrite: URL editieren
 yrewrite_perm_seo_edit = YRewrite: SEO-Daten editieren
-yrewrite_seo_settings = Einstellungen
-yrewrite_seo_saved = Einstellungen gespeichert
+yrewrite_settings = Einstellungen
+yrewrite_settings_saved = Einstellungen gespeichert
+yrewrite_unicode_urls = Unicode-Zeichen in URLs erlauben (Umlaute, chinesische/kyrillische Zeichen etc.)
 yrewrite_hide_url_block = URL-Block verbergen
 yrewrite_hide_seo_block = SEO-Block verbergen
