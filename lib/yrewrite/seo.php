@@ -230,16 +230,21 @@ class rex_yrewrite_seo
                             OR medialist9 <> ""
                             OR medialist10 <> ""
                         ) 
-                    ORDER BY priority LIMIT 1
+                    ORDER BY priority
                 ';
-                $sql->setQuery($query, [
+                $collection = $sql->getArray($query, [
                     'article_id' => $this->article->getId(),
                     'clang_id'   => $this->article->getClangId(),
                 ]);
-                $images = $sql->hasNext() ? $sql->getValue('mediagroup') : '';
+                $images = [];
+                foreach ($collection as $item) {
+                    $images = array_merge($images, explode(',', $item['mediagroup']));
+                }
+                $images = implode(',', array_unique(array_filter($images)));
             }
         }
-        return $images;
+
+        return rex_extension::registerPoint(new rex_extension_point('YREWRITE_IMAGES_POST', $images, ['article' => $this->article]));
     }
 
     public function getImageTag()
@@ -366,6 +371,7 @@ class rex_yrewrite_seo
                         ($article_id != $domain->getNotfoundId() || $article_id == $domain->getStartId())
 
                     ) {
+                        $this->article = $article;
 
                         $changefreq = $article->getValue(self::$meta_changefreq_field);
                         if (!in_array($changefreq, self::$changefreq)) {
