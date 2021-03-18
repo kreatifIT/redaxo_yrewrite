@@ -129,7 +129,17 @@ jQuery(document).ready(function() {
 }
 
 if ($showlist) {
-    $sql = 'SELECT * FROM ' . rex::getTable('yrewrite_forward');
+    $sqlWhere = '';
+    $searchTerm = rex_request('search-term', 'string', '');
+    $yform = new rex_yform();
+
+    if (strlen($searchTerm)) {
+        $d  = rex_sql::factory();
+        $_search  = $d->escape("%{$searchTerm}%");
+        $sqlWhere = " AND (url LIKE  {$_search})";
+    }
+
+    $sql = 'SELECT * FROM ' . rex::getTable('yrewrite_forward') . ' WHERE 1 = 1' . $sqlWhere;
     if (rex_get('sort','string') == 'domain_id') {
         $sql .= ' ORDER BY url';
         if (rex_get('sorttype','string') == 'desc') {
@@ -204,8 +214,11 @@ if ($showlist) {
 
     $content = $list->get();
 
+    $searchControl = '<form action="'.\rex_url::currentBackendPage().'" method="post" class="form-inline"><div class="input-group input-group-xs"><input class="form-control" style="height: 24px; padding-top: 3px; padding-bottom: 3px; font-size: 12px; line-height: 1;" type="text" name="search-term" value="'.htmlspecialchars($searchTerm).'" /><div class="input-group-btn"><button type="submit" class="btn btn-primary btn-xs">'.$this->i18n('search').'</button></div></div></form>';
+
     $fragment = new rex_fragment();
     $fragment->setVar('title', $this->i18n('forward'));
     $fragment->setVar('content', $content, false);
+    $fragment->setVar('options', $searchControl, false);
     echo $fragment->parse('core/page/section.php');
 }
