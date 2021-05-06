@@ -113,13 +113,15 @@ class rex_yrewrite_seo
         return $this->cleanString($title);
     }
 
-    public function getDescription($content_length = 180)
+    public function getDescription($content_length = 180, $stripTags = true)
     {
         $description = trim(rex_extension::registerPoint(new rex_extension_point('YREWRITE_DESCRIPTION',
             $this->article->getValue(self::$meta_description_field), ['article' => $this->article])));
 
         if ($description != '') {
-            $description = strip_tags($description);
+            if ($stripTags) {
+                $description = strip_tags($description);
+            }
             $description = wordwrap($description, $content_length, '' . "|||||||");
             $description = explode("|||||||", $description);
             $description = array_shift($description);
