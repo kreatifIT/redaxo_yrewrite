@@ -10,10 +10,7 @@
  * @var rex_addon $this
  */
 
-if(!rex::isBackend()) {
-    $path = rtrim(dirname($_SERVER['SCRIPT_NAME']), DIRECTORY_SEPARATOR) . '/';
-    rex_url::init(new rex_path_default_provider($path, "redaxo", false));
-} else if (rex::getUser()) {
+if (rex::getUser()) {
     rex_view::addCssFile($this->getAssetsUrl('yrewrite.css'));
 }
 
@@ -24,6 +21,9 @@ rex_perm::register('yrewrite[seo]', rex_i18n::msg('yrewrite_perm_seo_edit'));
 rex_extension::register('PACKAGES_INCLUDED', function ($params) {
 
     rex_yrewrite::init();
+    // kreatif: getting absolute paths
+    $domain = rex_yrewrite::getCurrentDomain();
+    rex_url::init(new rex_path_default_provider($domain->getUrl(), "redaxo", false));
 
     if (rex_request('rex_yrewrite_func', 'string') == 'robots') {
         $robots = new rex_yrewrite_seo();
