@@ -126,7 +126,7 @@ class rex_yrewrite_seo
             $description = explode("|||||||", $description);
             $description = array_shift($description);
         }
-        return $this->cleanString($description);
+        return $this->cleanString(trim($description));
     }
 
     public function getCanonicalUrl()
