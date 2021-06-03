@@ -737,13 +737,7 @@ class rex_yrewrite
 
     public static function getFullPath($link = '')
     {
-        $domain = self::getHost();
-        $http = 'http://';
-        $subfolder = rex_url::base();
-        if (self::isHttps()) {
-            $http = 'https://';
-        }
-        return $http . $domain . $subfolder . $link;
+        return rex_url::base() . $link;
     }
 
     public static function getHost()
