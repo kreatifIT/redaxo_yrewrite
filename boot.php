@@ -53,7 +53,7 @@ rex_extension::register('PACKAGES_INCLUDED', function ($params) {
     rex_extension::register('URL_REWRITE', function (rex_extension_point $ep) {
         $params = $ep->getParams();
         $params['subject'] = $ep->getSubject();
-        return rex_yrewrite::rewrite($params);
+        return rex_yrewrite::rewrite($params, [], true);
     });
 
     rex_extension::register('MEDIA_MANAGER_URL', function (rex_extension_point $ep) {
